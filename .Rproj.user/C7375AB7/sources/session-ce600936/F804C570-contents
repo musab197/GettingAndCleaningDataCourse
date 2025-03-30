@@ -1,0 +1,87 @@
+getwd()
+setwd("D:/Musab_data/Work_Dir_R")
+getwd()
+
+unzip("getdata_projectfiles_UCI HAR Dataset.zip")
+file.exists("getdata_projectfiles_UCI HAR Dataset")
+
+activity_labels <- read.table("D:/Musab_data/Work_Dir_R/UCI HAR Dataset/activity_labels.txt", quote="\"", comment.char="")
+
+install.packages("readxl")
+library(readxl)
+install.packages("readtxt")
+library(readtext)
+
+getwd()
+setwd("D:/Musab_data/Work_Dir_R/UCI HAR Dataset")
+
+features <- read.table("features.txt", header = FALSE)
+head(features)
+View(features)
+activity_labels <- read.table("activity_labels.txt", header = FALSE)
+head(activity_labels)
+colnames(activity_labels)
+colnames(activity_labels) <- c("ActivityID", "Activity")
+colnames(features) <- c("FeatureID", "FeatureName")
+
+subject_train <- read.table("train/subject_train.txt", header = FALSE)
+subject_test <- read.table("test/subject_test.txt", header = FALSE)
+colnames(subject_train) <- "SubjectID"
+colnames(subject_test) <- "SubjectID"
+
+X_train <- read.table("train/X_train.txt", header = FALSE)
+X_test <- read.table("test/X_test.txt", header = FALSE)
+colnames(X_train) <- features$FeatureName
+colnames(X_test) <- features$FeatureName
+
+y_train <- read.table("train/y_train.txt", header = FALSE)
+y_test <- read.table("test/y_test.txt", header = FALSE)
+colnames(y_train) <- "ActivityID"
+colnames(y_test) <- "ActivityID"
+
+head(features)
+head(activity_labels)
+head(X_train)
+head(X_test)
+head(subject_train)
+
+
+x_data <- rbind(X_train, X_test)
+y_data <- rbind(y_train, y_test)
+subject_data <- rbind(subject_train, subject_test)
+
+
+colnames(x_data) <- features[, 2]
+colnames(y_data) <- "Activity"
+colnames(subject_data) <- "Subject"
+
+data <- cbind(subject_data, y_data, x_data)
+View(data)
+
+
+selected_columns <- grep("-(mean|std)\\(\\)", features[, 2])
+data_subset <- data[, c(1, 2, selected_columns + 2)]
+
+data_subset$Activity <- factor(data_subset$Activity, levels = activity_labels[, 1], labels = activity_labels[, 2])
+
+
+
+names(data_subset) <- gsub("^t", "Time", names(data_subset))
+names(data_subset) <- gsub("^f", "Frequency", names(data_subset))
+names(data_subset) <- gsub("Acc", "Accelerometer", names(data_subset))
+names(data_subset) <- gsub("Gyro", "Gyroscope", names(data_subset))
+names(data_subset) <- gsub("Mag", "Magnitude", names(data_subset))
+names(data_subset) <- gsub("BodyBody", "Body", names(data_subset))
+
+
+install.packages("dplyr")
+library(dplyr)
+tidy_data <- data_subset %>%
+  group_by(Subject, Activity) %>%
+  summarise_all(mean)
+View(tidy_data)
+
+colnames(filtered_data)
+colnames(activity_labels)
+colnames(activity_labels) <- c("ActivityID", "Activity")
+write.table(tidy_data, "tidy_data.txt", row.names = FALSE)

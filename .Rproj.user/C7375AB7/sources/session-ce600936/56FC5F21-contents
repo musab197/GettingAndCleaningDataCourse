@@ -1,0 +1,43 @@
+library(dplyr)
+
+download.file("https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip", destfile = "dataset.zip")
+unzip("dataset.zip")
+
+list.files("./UCI HAR Dataset")
+
+setwd("D:/Musab_data/Work_Dir_R/Getting and Cleaining Data_Course/UCI HAR Dataset")
+
+
+features <- read.table("features.txt")
+activity_labels <- read.table("activity_labels.txt", col.names = c("ActivityID", "ActivityName"))
+
+
+x_train <- read.table("train/X_train.txt", col.names = features$V2)
+y_train <- read.table("train/y_train.txt", col.names = "ActivityID")
+subject_train <- read.table("train/subject_train.txt", col.names = "Subject")
+
+x_test <- read.table("test/X_test.txt", col.names = features$V2)
+y_test <- read.table("test/y_test.txt", col.names = "ActivityID")
+subject_test <- read.table("test/subject_test.txt", col.names = "Subject")
+
+
+
+train_data <- cbind(subject_train, y_train, x_train)
+test_data <- cbind(subject_test, y_test, x_test)
+
+# Combine training and test sets
+complete_data <- rbind(train_data, test_data)
+dim(complete_data)
+
+## Identify the columns related to mean and standard deviation
+mean_std_columns <- grepl("mean\\(\\)|std\\(\\)", features$V2)
+
+Subset the data to keep only these columns + Subject and ActivityID:
+
+
+## Subset the data to keep only these columns + Subject and ActivityID
+filtered_data <- complete_data[, c(TRUE, TRUE, mean_std_columns)]
+dim(filtered_data)
+
+
+filtered_data <- merge(filtered_data, activity_labels, by.x = "ActivityID", by.y = "V1", all.x = TRUE)
